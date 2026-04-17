@@ -108,11 +108,13 @@ $isOwnListing = isLoggedIn() && ($listing['seller_id'] === (int)$_SESSION['user_
         </div>
     </div>
 </div>
-
-           <div class="aboutCard"> 
+<div class="aboutCard"> 
     <h2>About the Seller</h2>
 
-   
+    <div class="contactRow">
+        <img src="../img/email-icon-614x460.png" alt="email" class="accountIcons">
+        <span class="contact"><a href="mailto:<?= sanitize_string($seller['email'])?>" class="contactRow"><?= sanitize_string($seller['email'])?></a></span>
+    </div>
 
     <div class="aboutInfo">
         <span>Joined <?= date('jS F Y', strtotime($seller['created_at'] ?? 'now')) ?></span>
@@ -139,7 +141,6 @@ $isOwnListing = isLoggedIn() && ($listing['seller_id'] === (int)$_SESSION['user_
             <?php endif; ?>
 
         </div>
-
     </div>
 
     <script src="../js/script.js"></script>

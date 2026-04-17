@@ -324,7 +324,7 @@ padding:5px;
     width: 15%;
     max-width: 15%;
     border-radius: 50%;
-   
+   object-fit: contain;
 }
 .profilePic {
 
@@ -625,8 +625,6 @@ background-color: var(--bg-card);
 }
 .aboutCard{
   
-    display: flex;
-    flex-direction: column; /* stack sections */
     gap: 12px;
     padding: 12px;
     border-radius: 12px;
@@ -635,7 +633,6 @@ background-color: var(--bg-card);
 }
 .aboutCard h2 {
     margin: 0;          /* removes default top/bottom margin */
-    margin-bottom: 6px; /* optional: control spacing manually */
     font-size: 16px;    /* optional: tighten the look */
 }
 
@@ -645,6 +642,13 @@ background-color: var(--bg-card);
     font-size: 12px;
     color: var(--text-light);
     
+}
+.contactRow {
+    display: flex;
+    align-items: center;  /* vertical alignment */
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-light);
 }
 /* ── SELLER CARD ── */
 .seller-card {
@@ -693,6 +697,7 @@ background-color: var(--bg-card);
     height: 14px;
     object-fit: contain;
 }
+
 .seller-name {
     font-weight: 500;
     font-size: 15px;
