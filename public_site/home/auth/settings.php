@@ -4,7 +4,7 @@ require_once '../../reuse/authHelper.php';
 require_once '../../reuse/functions.php';
 requireLogin();
 
-//settings test
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
