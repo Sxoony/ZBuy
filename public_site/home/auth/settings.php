@@ -4,7 +4,7 @@ require_once '../../reuse/authHelper.php';
 require_once '../../reuse/functions.php';
 requireLogin();
 
-
+//settings test
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -23,7 +23,6 @@ requireLogin();
             <!-- To be added: Dark Mode, Languages, Log Out, Notification Preferences-->
             <div class="form-group">
                 <button class="menu-row" id = "darkmodeBtn">
-
                 <label for="darkmodeCheckbox" >Dark Mode</label><br><br>
                 </button>
 
