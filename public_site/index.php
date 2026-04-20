@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
    
    
 }
- $stmt = $pdo->prepare('SELECT * FROM listings ');
+ $stmt = $pdo->prepare('SELECT * FROM listings WHERE NOT(status="sold")');
 $stmt->execute();
 $listings = $stmt->fetchAll();
 ?>
@@ -83,7 +83,9 @@ $listings = $stmt->fetchAll();
            <button class="label" id ="sideBarBrowseBtn">Browse</button><br><br>
             <button class="label" id ="sideBarBuyeBtn">Buy</button><br><br>
             <button class="label" id ="sideBarSellBtn">Sell</button><br><br>
-            <button class="label" id ="sideBarMessagesBtn">Messages</button><br><br>
+   <button class="label" id="sideBarMessagesBtn">
+    <a href="communication/messages.php">Messages</a>
+</button>
         </ul>
     </div>
 

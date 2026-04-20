@@ -77,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <small class="error-message" id="loginPasswordError"></small>
         </div>
 
-        <button type="submit" id="loginButton">Login</button>
+        <button type="submit" id="loginButton" class="loginButton">Login</button>
     </form>
 
     <div class="switch-link">

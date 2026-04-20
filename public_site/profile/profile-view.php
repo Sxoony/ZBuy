@@ -64,7 +64,7 @@ $ratings = $stmt->fetchAll();
             <button class="label" id="sideBarBrowseBtn">Browse</button><br><br>
             <button class="label" id="sideBarBuyeBtn">Buy</button><br><br>
             <button class="label" id="sideBarSellBtn">Sell</button><br><br>
-            <button class="label" id="sideBarMessagesBtn">Messages</button><br><br>
+            <button class="label" id="sideBarMessagesBtn"><a href="../communication/messages.php">Messages</a></button><br><br>
         </ul>
     </div>
 

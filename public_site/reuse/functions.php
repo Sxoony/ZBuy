@@ -14,7 +14,36 @@ return (float) filter_var($value, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLO
 }
 
 
+function timeAgo($date){
+ // Input date (MySQL format: YYYY-MM-DD HH:MM:SS)
+    $inputDate = new DateTime($date);
+    
+    // Current date/time
+    $now = new DateTime();
 
+    // Difference in seconds
+    $diffSeconds = abs($now->getTimestamp() - $inputDate->getTimestamp());
+    
+    // Convert to minutes
+    $minutes = floor($diffSeconds / 60);
+
+    if ($minutes < 60) {
+        return $minutes . " minute(s) ago";
+    }
+
+    // Convert to hours
+    $hours = floor($minutes / 60);
+
+    if ($hours < 24) {
+        return $hours . " hour(s) ago";
+    }
+
+    // Convert to days
+    $days = floor($hours / 24);
+
+    return $days . " day(s) ago";
+
+}
 //Validation funcs
 function notEmptyValue($value) : bool{
 return trim($value) !== '';

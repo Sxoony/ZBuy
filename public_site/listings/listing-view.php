@@ -15,6 +15,9 @@ if (!$listingId) {
 $stmt = $pdo->prepare('SELECT * FROM listings WHERE listing_id = ?');
 $stmt->execute([$listingId]);
 $listing = $stmt->fetch();
+$views=$listing['views'];
+$stmt=$pdo->prepare('UPDATE listings SET views = ? WHERE listing_id ='.$listingId);
+$stmt->execute([$views+1]);
 
 if (!$listing) {
     redirect('/PROJECT/public_site/index.php');
@@ -67,13 +70,23 @@ $isOwnListing = isLoggedIn() && ($listing['seller_id'] === (int)$_SESSION['user_
                 </div>
             </div>
 
-            <div class="listing-details">
-                <p class="listing-price"><?= formatPrice((float)$listing['price']) ?></p>
-                
-                <p class="listing-stock"><?= (int)$listing['amount'] ?> available</p>
-                
-                <p class="listing-description"><?= sanitize_string($listing['description']) ?></p>
-            </div>
+           <div class="listing-details">
+    <p class="listing-price"><?= formatPrice((float)$listing['price']) ?></p>
+
+    <div class="listing-meta">
+        <?php
+        if ($views == 0) {
+            echo '<p class="listing-stock">1 view</p>';
+        } else {
+            echo '<p class="listing-stock">' . ($views + 1) . ' views</p>';
+        }
+        ?>
+        <p class="listing-stock">Posted <?= timeAgo($listing['created_at']) ?></p>
+    </div>
+
+    <p class="listing-stock"><?= (int)$listing['amount'] ?> available</p>
+    <p class="listing-description"><?= sanitize_string($listing['description']) ?></p>
+</div>
 
         </div>
 
@@ -130,7 +143,7 @@ $isOwnListing = isLoggedIn() && ($listing['seller_id'] === (int)$_SESSION['user_
                 <a href="/PROJECT/public_site/transactions/checkout.php?listing_id=<?= $listingId ?>" class="btn-buy">
                     Buy Now
                 </a>
-                <a href="/PROJECT/public_site/communication/messages.php?receiver_id=<?= (int)$seller['user_id'] ?>" class="btn-message">
+                <a href="/PROJECT/public_site/communication/messages.php?with=<?= (int)$seller['user_id'] ?>" class="btn-message">
                     Message Seller
                 </a>
 

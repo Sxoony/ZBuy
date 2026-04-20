@@ -88,7 +88,7 @@ if ($stmt->fetch()){
             <small class="error-message" id="confirmPasswordError"></small>
         </div>
  
-        <button type="submit" value="Register"  id = "registerButton" class = "registerbtn">Register</button>
+        <button type="submit" value="Register"  id = "registerButton" class = "loginButton">Register</button>
         
     </form>
  
