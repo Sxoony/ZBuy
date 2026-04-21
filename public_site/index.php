@@ -82,7 +82,7 @@ $listings = $stmt->fetchAll();
         <ul> 
            <button class="label" id ="sideBarBrowseBtn">Browse</button><br><br>
             <button class="label" id ="sideBarBuyeBtn">Buy</button><br><br>
-            <button class="label" id ="sideBarSellBtn">Sell</button><br><br>
+            <button class="label" id ="sideBarSellBtn"><a href="listings/listing-create-edit (sell).php">Sell</a></button><br><br>
    <button class="label" id="sideBarMessagesBtn">
     <a href="communication/messages.php">Messages</a>
 </button>

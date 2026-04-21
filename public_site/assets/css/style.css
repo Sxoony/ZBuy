@@ -20,6 +20,10 @@ body {
     background-color: var(--bg-main);
 }
 
+select{
+    padding: 10px;
+    width: fit-content;
+}
 .checkbox {
 
     width: 20px;
@@ -618,7 +622,51 @@ background-color: var(--bg-card);
     padding: 20px;
     
 }
+.container {
+    width: 320px;
+  }
 
+  .main-box {
+    width: 100%;
+    height: 300px;
+    border: 2px dashed #aaa;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+  }
+
+  .main-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+  }
+  .thumbs {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    overflow-x: auto;
+  }
+
+  .thumbs img {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  .upload-text {
+    position: absolute;
+    color: #777;
+    pointer-events: none;
+  }
+
+  
 /* ── RIGHT SIDEBAR ── */
 .listing-sidebar {
     width: 320px;
@@ -1270,6 +1318,26 @@ background-color: var(--bg-card);
 
 .chat-send-btn:hover {
     opacity: 0.85;
+}
+.ad-detail-form{
+display: flex;
+flex-direction: column;
+padding: 20px 20px;
+}
+.ad-row{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    background-color: var(--bg-main);
+    cursor: pointer;
+}
+.ad-row input{
+width: fit-content;
+
 }
 
 /* ═══════════════════════════════════════

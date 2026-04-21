@@ -3,7 +3,7 @@
 /* 
    REGISTER FORM
  */
-
+let selectedFiles = [];
 const registerForm = document.getElementById('registerForm');
 
 if (registerForm) {
@@ -325,3 +325,121 @@ function switchImage(thumbnail) {
     document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
     thumbnail.classList.add('active');
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+const box = document.getElementById("uploadBox");
+const input = document.getElementById("fileInput");
+const thumbs = document.getElementById("thumbs");
+if (!box || !input || !thumbs) return;
+// Click opens file picker
+box.addEventListener("click", () => input.click());
+
+// Drag styling
+box.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  box.classList.add("dragover");
+});
+
+box.addEventListener("dragleave", () => {
+  box.classList.remove("dragover");
+});
+
+
+box.addEventListener("drop", (e) => {
+  e.preventDefault();
+  box.classList.remove("dragover");
+
+  selectedFiles = selectedFiles.concat(Array.from(e.dataTransfer.files));
+  render();
+});
+function syncInput() {
+  const dt = new DataTransfer();
+  selectedFiles.forEach(f => dt.items.add(f));
+  input.files = dt.files;
+}
+function render() {
+  thumbs.innerHTML = "";
+  box.innerHTML = `<span class="upload-text">Click or drop images</span>`;
+
+  selectedFiles.forEach((file, index) => {
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      const img = document.createElement("img");
+      img.src = e.target.result;
+
+      if (index === 0) {
+        box.innerHTML = "";
+        box.appendChild(img);
+      } else {
+        thumbs.appendChild(img);
+      }
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
+// File select
+input.addEventListener("change", (e) => {
+  selectedFiles = selectedFiles.concat(Array.from(e.target.files));
+  render();
+});
+document.querySelector("form").addEventListener("submit", () => {
+  const dt = new DataTransfer();
+
+  selectedFiles.forEach(file => dt.items.add(file));
+
+  input.files = dt.files;
+});
+let imageSet = new Set();
+
+function handleFiles(files) {
+
+  thumbs.innerHTML = "";
+  box.innerHTML = `<span class="upload-text">Click or drop images</span>`;
+
+  Array.from(files).forEach((file, index) => {
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      const src = e.target.result;
+
+      const img = document.createElement("img");
+      img.src = src;
+
+      // main image = first file only
+      if (index === 0) {
+        box.innerHTML = "";
+        box.appendChild(img);
+      } else {
+        thumbs.appendChild(img);
+      }
+
+      // swap logic
+      img.addEventListener("click", () => {
+        const main = box.querySelector("img");
+        if (!main) return;
+
+        const temp = main.src;
+        main.src = img.src;
+        img.src = temp;
+      });
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
+
+
+
+  const typeSelect = document.getElementById("type");
+  const productSection = document.getElementById("amount");
+
+  typeSelect.addEventListener("change", function () {
+  if (this.value === "product") {
+      productSection.style.display = "flex";
+    } else {
+      productSection.style.display = "none";
+    }
+})
+});
