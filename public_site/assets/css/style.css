@@ -12,7 +12,56 @@
     --border-light: #e5e7eb;
     --iconborder:#e2e5ea; 
 }
+body.dark-mode {
+    --bg-main:    #0f1117;
+    --bg-card:    #1a1d27;
+    --bg-sidebar: #13151f;
+    --text-dark:  #e8eaf0;
+    --text-light: #8b8fa8;
+    --border-light: #2a2d3e;
 
+}
+
+.toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text-dark);
+}
+
+.toggle-label input {
+    display: none;
+}
+
+.toggle-track {
+    width: 40px;
+    height: 22px;
+    background: var(--border-light);
+    border-radius: 11px;
+    position: relative;
+    transition: background 0.2s ease;
+}
+
+.toggle-label input:checked + .toggle-track {
+    background: var(--primary-blue);
+}
+
+.toggle-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s ease;
+}
+
+.toggle-label input:checked + .toggle-track .toggle-thumb {
+    transform: translateX(18px);
+}
 body {
 
     margin: 0;
@@ -58,7 +107,7 @@ input {
 
 button {
 
- 
+    width: 100%;
     padding: 10px;
     background-color: var(--primary-blue);
     border: none;
@@ -262,7 +311,17 @@ transition: backgound 0.05s ease;
 /* 
    PROFILE / ACCOUNT MODAL
  */
+.accountModal{
+    border-radius: 8px;
+ 
 
+    padding: 30px;
+    width:fit-content;
+    text-align: center;
+    
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+
+}
 .profile-container {
 
     background: white;
@@ -376,13 +435,14 @@ padding:5px;
 }
 
 .register-modal-content {
-
+    
     position: relative;
     width: 350px;
     padding: 20px;
     text-align: center;
     border-radius: 8px;
     background-color: var(--bg-card);
+
 }
 
 .close-btn {
@@ -393,6 +453,8 @@ padding:5px;
     font-size: 24px;
     cursor: pointer;
     color: #333;
+    width: fit-content;
+    background:none;
 }
 
 
@@ -666,7 +728,312 @@ background-color: var(--bg-card);
     pointer-events: none;
   }
 
-  
+  /* ═══════════════════════════════════════
+   CHECKOUT PAGE
+═══════════════════════════════════════ */
+
+body.checkout-page {
+    background: var(--bg-main);
+    min-height: 100vh;
+    padding: 40px 24px;
+    box-sizing: border-box;
+}
+
+.checkout-wrapper {
+    display: flex;
+    flex-direction: row;
+    gap: 28px;
+    max-width: 960px;
+    margin: 0 auto;
+    align-items: flex-start;
+}
+
+/* ── Title ── */
+.checkout-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin: 0 0 24px;
+}
+
+/* ── Left column ── */
+.checkout-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ── Right sidebar ── */
+.checkout-sidebar {
+    width: 300px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 24px;
+}
+
+/* ── Cards ── */
+.checkout-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.checkout-card-heading {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin: 0;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.checkout-card-sub {
+    font-size: 12px;
+    color: var(--text-light);
+    margin: -8px 0 0;
+}
+
+/* ── Form fields ── */
+.checkout-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.checkout-field label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+.checkout-field input,
+.checkout-field select,
+.checkout-field textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--text-dark);
+    background: var(--bg-main);
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.2s ease;
+    font-family: inherit;
+}
+
+.checkout-field input:focus,
+.checkout-field select:focus,
+.checkout-field textarea:focus {
+    border-color: var(--primary-blue);
+    background: var(--bg-card);
+}
+
+.checkout-field textarea {
+    resize: vertical;
+    min-height: 80px;
+    line-height: 1.5;
+}
+
+/* ── Side by side row (expiry + cvv) ── */
+.checkout-row {
+    display: flex;
+    gap: 14px;
+}
+
+.checkout-row .checkout-field {
+    flex: 1;
+}
+
+/* ── Card number with icon ── */
+.card-number-wrap {
+    position: relative;
+}
+
+.card-number-wrap input {
+    padding-right: 40px;
+    letter-spacing: 1px;
+}
+
+.card-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    pointer-events: none;
+}
+
+.optional-tag {
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--text-light);
+}
+
+.error-message {
+    font-size: 12px;
+    color: #ef4444;
+    min-height: 14px;
+}
+
+.error-banner {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+/* ── Confirm payment button ── */
+.btn-confirm-payment {
+    width: 100%;
+    padding: 14px;
+    background: var(--primary-blue);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+    margin-top: 4px;
+}
+
+.btn-confirm-payment:hover {
+    opacity: 0.87;
+}
+
+/* ═══════════════════════════════════════
+   ORDER SUMMARY (sidebar)
+═══════════════════════════════════════ */
+
+.order-listing-preview {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.order-listing-img {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 8px;
+    flex-shrink: 0;
+    border: 1px solid var(--border-light);
+}
+
+.order-listing-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.order-listing-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-dark);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.order-listing-seller {
+    font-size: 12px;
+    color: var(--text-light);
+    margin: 0;
+}
+
+.order-listing-seller a {
+    color: var(--primary-blue);
+    text-decoration: none;
+}
+
+.order-listing-seller a:hover {
+    text-decoration: underline;
+}
+
+/* ── Price breakdown ── */
+.order-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 4px;
+    border-top: 1px solid var(--border-light);
+}
+
+.order-breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    color: var(--text-dark);
+}
+
+.order-breakdown-row small {
+    font-size: 11px;
+    color: var(--text-light);
+}
+
+.order-breakdown-row.total {
+    font-size: 16px;
+    font-weight: 600;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-light);
+    color: var(--primary-blue);
+}
+
+/* ── Escrow notice ── */
+.escrow-notice {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    background: var(--bg-main);
+    border-radius: 8px;
+    padding: 12px;
+    border: 1px solid var(--border-light);
+}
+
+.escrow-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+    line-height: 1.4;
+}
+
+.escrow-notice p {
+    font-size: 12px;
+    color: var(--text-light);
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* ═══════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════ */
+
+@media (max-width: 768px) {
+    .checkout-wrapper {
+        flex-direction: column-reverse;
+    }
+
+    .checkout-sidebar {
+        width: 100%;
+        position: static;
+    }
+
+    .checkout-row {
+        flex-direction: column;
+        gap: 14px;
+    }
+}
 /* ── RIGHT SIDEBAR ── */
 .listing-sidebar {
     width: 320px;
@@ -1340,6 +1707,11 @@ width: fit-content;
 
 }
 
+.show-password-btn{
+ width: fit-content;
+    background:none;
+    display: flex;
+}
 /* ═══════════════════════════════════════
    RESPONSIVE
 ═══════════════════════════════════════ */

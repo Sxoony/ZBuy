@@ -36,6 +36,69 @@ $countR = $stmt->fetchColumn();
 $stmt = $pdo->prepare('SELECT * FROM ratings WHERE receiver_id = ?');
 $stmt->execute([$profileId]);
 $ratings = $stmt->fetchAll();
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['saveSettings'])) {
+
+    $username = trim(post('settingsUsername'));
+    $fullName = trim(post('settingsFullName'));
+    $address  = trim(post('settingsAddress'));
+    $password = $_POST['settingsPassword'] ?? '';
+
+    $updates = [];
+    $params  = [];
+
+    if ($username !== '' && $username !== $_SESSION['username']) {
+        // Check not taken by someone else
+        $stmt = $pdo->prepare('SELECT user_id FROM users WHERE username = ? AND user_id != ?');
+        $stmt->execute([$username, $_SESSION['user_id']]);
+        if ($stmt->fetch()) {
+            // handle error
+        } else {
+            $updates[] = 'username = ?';
+            $params[]  = $username;
+        }
+    }
+
+    if ($fullName !== '') {
+        $updates[] = 'full_name = ?';
+        $params[]  = $fullName;
+    }
+
+    if ($address !== '') {
+        $updates[] = 'address = ?';
+        $params[]  = $address;
+    }
+
+    // Only hash and update password if one was provided
+    if ($password !== '') {
+        $updates[] = 'password_hash = ?';
+        $params[]  = password_hash($password, PASSWORD_BCRYPT);
+    }
+
+    // Profile picture upload
+    if (!empty($_FILES['settingsProfilePic']['tmp_name'])) {
+        $uploadDir = __DIR__ . '/../img/';
+        $fileName  = uniqid() . '_' . basename($_FILES['settingsProfilePic']['name']);
+        if (move_uploaded_file($_FILES['settingsProfilePic']['tmp_name'], $uploadDir . $fileName)) {
+            $updates[] = 'profile_picture_path = ?';
+            $params[]  = $fileName;
+        }
+    }
+
+    if (!empty($updates)) {
+        $params[] = $_SESSION['user_id'];
+        $sql = 'UPDATE users SET ' . implode(', ', $updates) . ' WHERE user_id = ?';
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+
+        // Refresh session with new values
+        $stmt = $pdo->prepare('SELECT * FROM users WHERE user_id = ?');
+        $stmt->execute([$_SESSION['user_id']]);
+        $user = $stmt->fetch();
+        loginUser($user);
+    }
+
+    redirect('/public_site/index.php');
+}
 ?>
 
 
@@ -79,7 +142,7 @@ $ratings = $stmt->fetchAll();
                         <?= sanitize_string($profileUser['full_name']) ?>
                     <?php endif; ?></span>
                 <?php if ($isOwnProfile): ?>
-                    <button class="profileEditBtn">Edit</button>
+                    <button class="profileEditBtn" id="profileEditBtn">Edit</button>
                 <?php endif; ?>
             </div>
             <div class="subInfo">
@@ -166,6 +229,41 @@ $ratings = $stmt->fetchAll();
     </div>
     </form>
 <!-- REST TO DO: - add a hyperlink to the listing cards, add functionality to edit profile - full name, address, password, profile picture. -->
+ <dialog id="settingsModal" class="register-modal-content">
+    <form method="POST" action="/public_site/home/settings.php"
+          id="settingsForm" enctype="multipart/form-data">
+
+        <button type="button" class="close-btn" id="closeSettings">&times;</button>
+        <h2>Edit Profile</h2>
+
+        <label for="settingsUsername">Username</label>
+        <input type="text" name="settingsUsername" id="settingsUsername"
+               value="<?= sanitize_string($_SESSION['username']) ?>">
+
+        <label for="settingsFullName">Full Name</label>
+        <input type="text" name="settingsFullName" id="settingsFullName"
+               value="<?= sanitize_string($_SESSION['full_name'] ?? '') ?>">
+
+        <label for="settingsAddress">Address</label>
+        <input type="text" name="settingsAddress" id="settingsAddress"
+               value="<?= sanitize_string($_SESSION['address'] ?? '') ?>">
+
+        <label for="settingsPassword">New Password <span class="optional-tag">leave blank to keep current</span></label>
+        <div class="password-wrap">
+            <input type="password" name="settingsPassword" id="settingsPassword"
+                   placeholder="New password">
+            <button type="button" class="show-password-btn" id="togglePassword">👁</button>
+        </div>
+
+        <label for="settingsProfilePic">Profile Picture</label>
+        <input type="file" name="settingsProfilePic" id="settingsProfilePic"
+               accept="image/jpeg,image/png,image/webp">
+
+        <small class="error-message" id="settingsError"></small>
+
+        <button type="submit" name="saveSettings">Save Changes</button>
+    </form>
+</dialog>
     <script src="../js/script.js"></script>
 </body>
 

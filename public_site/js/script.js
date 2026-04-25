@@ -1,9 +1,84 @@
+const indexMessages=document.getElementById('sideBarMessagesBtn');
+if (indexMessages){
+    indexMessages.addEventListener("click", function(e){
+      window.location.href="../communication/messages.php";
+    })
+}
 
 
+const indexSell=document.getElementById('sideBarSellBtn');
+if (indexSell){
+    indexSell.addEventListener("click", function(e){
+      window.location.href="../public_site/listings/listing-create-edit.php";
+    })
+}
+
+const indexLogout =document.getElementById('logOutBtn');
+if (indexLogout){
+    indexLogout.addEventListener("click", function(e){
+      window.location.href="../public_site/home/auth/logout.php";
+    })
+}
+
+const togglePassword = document.getElementById('togglePassword');
+const settingsPassword = document.getElementById('settingsPassword');
+
+if (togglePassword) {
+    togglePassword.addEventListener('click', function() {
+        const isPassword = settingsPassword.type === 'password';
+        settingsPassword.type = isPassword ? 'text' : 'password';
+        this.textContent = isPassword ? '🙈' : '👁';
+    });
+}
+const editProfile = document.getElementById('profileEditBtn');
+const settingsModal = document.getElementById('settingsModal');
+if (editProfile) {
+    editProfile.addEventListener('click', function() {
+        settingsModal.showModal();
+    });
+}
+const darkModeToggle = document.getElementById('darkModeToggle');
+
+// Apply saved preference on every page load
+if (localStorage.getItem('darkMode') === 'true') {
+    document.body.classList.add('dark-mode');
+    if (darkModeToggle) darkModeToggle.checked = true;
+}
+
+if (darkModeToggle) {
+    darkModeToggle.addEventListener('change', function() {
+        document.body.classList.toggle('dark-mode', this.checked);
+        localStorage.setItem('darkMode', this.checked);
+    });
+}
+const reviewModal     = document.getElementById('reviewModal');
+const openReviewBtn   = document.getElementById('notificationOpen'); // whatever triggers it
+const closeReviewBtn  = document.getElementById('closeReview');
+const reviewScore     = document.getElementById('reviewScore');
+const scoreDisplay    = document.getElementById('scoreDisplay');
+
+if (openReviewBtn) {
+    openReviewBtn.addEventListener('click', () => reviewModal.showModal());
+}
+
+if (closeReviewBtn) {
+    closeReviewBtn.addEventListener('click', () => reviewModal.close());
+}
+
+if (reviewScore) {
+    reviewScore.addEventListener('input', function() {
+        scoreDisplay.textContent = this.value + ' / 5';
+    });
+}
 /* 
    REGISTER FORM
  */
-let selectedFiles = [];
+
+
+
+
+
+
 const registerForm = document.getElementById('registerForm');
 
 if (registerForm) {
@@ -152,10 +227,27 @@ if (loginForm) {
 //     });
 
 // }
+
+const successPopup=document.getElementById("successModal");
+const successForm=document.getElementById("successForm");
+const paymentConfirmed=document.getElementById('confirmPayment');
+const Successclose=document.getElementById('closeSuccess')
+
+if (paymentConfirmed){
+document.getElementById("confirmPayment").addEventListener("click", () => {
+    localStorage.setItem("paymentSuccess", "true");
+    window.location.href = "success.php";
+
+});}if (localStorage.getItem("paymentSuccess") === "true") {
+    successPopup.showModal();
+    localStorage.removeItem("paymentSuccess"); // prevent repeat
+}
+
 const popup = document.getElementById("registerModal");
 const openRegister = document.getElementById("registerUser");
-const closeBtn = document.querySelector(".close-btn");
+const closeBtn = document.getElementById('close-btn');
 const registerMForm = document.getElementById("registerMForm");
+
 
 if (openRegister) {
     openRegister.addEventListener("click", () => popup.showModal());
@@ -163,6 +255,7 @@ if (openRegister) {
 
 if (closeBtn) {
     closeBtn.onclick = () => popup.close();
+    
 }
 
 if (registerMForm) {
@@ -194,8 +287,9 @@ if (registerMForm) {
         }
 
         if (!valid) return;
-
+        
         registerMForm.requestSubmit();
+     
     });
 }
 
@@ -319,127 +413,212 @@ document.addEventListener('mousemove', (e) => {
 // SETTINGS
 
 
-//Images
-function switchImage(thumbnail) {
+document.addEventListener('DOMContentLoaded', function() {
+    const box    = document.getElementById("uploadBox");
+    const input  = document.getElementById("fileInput");
+    const thumbs = document.getElementById("thumbs");
+    if (!box || !input || !thumbs) return;
+
+    const keptInput    = document.getElementById("keptImages");
+    const keptVal      = keptInput ? keptInput.value.trim() : '';
+let existingImages = keptVal !== '' ? keptVal.split('#').filter(Boolean) : [];
+    let selectedFiles  = [];
+
+    // ── Open picker when clicking the box (not the remove button) ──
+    box.addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON" || e.target === input|| e.target ===thumbs) return;
+        input.click();
+    });
+
+    box.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        box.classList.add("dragover");
+    });
+
+    box.addEventListener("dragleave", () => {
+        box.classList.remove("dragover");
+    });
+
+    box.addEventListener("drop", (e) => {
+        e.preventDefault();
+        box.classList.remove("dragover");
+        selectedFiles = selectedFiles.concat(Array.from(e.dataTransfer.files));
+        render();
+    });
+
+    input.addEventListener("change", (e) => {
+        selectedFiles = selectedFiles.concat(Array.from(e.target.files));
+        render();
+    });
+
+    // ── Sync before submit ──
+   const form = document.getElementById("createListingForm");
+if (form) {
+    form.addEventListener("submit", () => {
+        const dt = new DataTransfer();
+        selectedFiles.forEach(f => dt.items.add(f));
+        input.files = dt.files;
+        if (keptInput) keptInput.value = existingImages.join('#');
+    });
+}
+
+    // ── Render all images ──
+    function render() {
+        thumbs.innerHTML = "";
+
+        const allExisting = existingImages.map(name  => ({ type: 'existing', name }));
+        const allNew      = selectedFiles.map((file, i) => ({ type: 'new', file, i }));
+        const all         = [...allExisting, ...allNew];
+
+        if (all.length === 0) {
+            // Nothing uploaded yet — restore placeholder
+            box.innerHTML = `<span class="upload-text">Click or drop images</span>`;
+            return;
+        }
+
+        // Resolve all srcs first so order is preserved, then place them
+        const srcs = new Array(all.length);
+        let resolved = 0;
+
+        all.forEach((item, pos) => {
+            if (item.type === 'existing') {
+                srcs[pos] = { src: `../img/${item.name}`, item, pos };
+                resolved++;
+                if (resolved === all.length) placeAll(srcs);
+            } else {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    srcs[pos] = { src: e.target.result, item, pos };
+                    resolved++;
+                    if (resolved === all.length) placeAll(srcs);
+                };
+                reader.readAsDataURL(item.file);
+            }
+        });
+        console.log()
+    }
+
+    function placeAll(srcs) {
+        box.innerHTML = "";
+        thumbs.innerHTML = "";
+
+        srcs.forEach(({ src, item, pos }) => {
+            if (pos === 0) {
+                placeMain(src, item);
+            } else {
+                placeThumb(src, item, pos);
+            }
+        });
+    }
+
+    // ── Main image box ──
+    function placeMain(src, item) {
+        const img = document.createElement("img");
+        img.src = src;
+        img.style.cssText = "width:100%; height:100%; object-fit:cover; pointer-events:none;";
+
+        const removeBtn = makeRemoveBtn(() => removeItem(item));
+        removeBtn.style.top   = "8px";
+        removeBtn.style.right = "8px";
+
+        box.appendChild(img);
+        box.appendChild(removeBtn);
+    }
+
+    // ── Thumbnail ──
+    function placeThumb(src, item, pos) {
+        const wrap = document.createElement("div");
+        wrap.style.cssText = "position:relative; display:inline-block; flex-shrink:0;";
+
+        const img = document.createElement("img");
+        img.src = src;
+        img.style.cssText = "width:70px; height:70px; object-fit:cover; border-radius:6px; display:block; cursor:pointer;";
+
+        // ── Swap thumbnail with main image ──
+        img.addEventListener("click", () => {
+            const mainImg = box.querySelector("img");
+            if (!mainImg) return;
+
+            // Swap srcs visually
+            const tempSrc = mainImg.src;
+            
+
+            // Swap in data arrays so order is preserved on submit
+            const mainIsExisting = tempSrc.includes('../img/');
+            if (item.type === 'existing') {
+                // Move this existing image to front
+                existingImages = existingImages.filter(n => n !== item.name);
+               
+                existingImages.unshift(item.name);
+                 const removeBtn = makeRemoveBtn(() => removeItem(item));
+                 render();
+            } else {
+                // Move this new file to front of selectedFiles
+                selectedFiles = selectedFiles.filter((_, idx) => idx !== item.i);
+                selectedFiles.unshift(item.file);
+                // Re-index items
+            }
+           
+        });
+
+       const removeBtn = makeRemoveBtn(() => removeItem(item));
+
+        wrap.appendChild(img);
+        wrap.appendChild(removeBtn);
+        thumbs.appendChild(wrap);
+    }
+
+    // ── Remove an item and re-render ──
+    function removeItem(item) {
+        if (item.type === 'existing') {
+            existingImages = existingImages.filter(n => n !== item.name);
+            
+        } else {
+            selectedFiles = selectedFiles.filter((_, idx) => idx !== item.i);
+        }
+        render();
+    }
+
+    // ── Build a remove button ──
+    function makeRemoveBtn(onClick) {
+        const btn = document.createElement("button");
+        btn.type      = "button";
+        btn.innerHTML = "&#10005;";
+        btn.style.cssText = `
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: rgba(0,0,0,0.55);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 11px;
+            cursor: pointer;
+            line-height: 1;
+            z-index: 10;
+        `;
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            onClick();
+        });
+        return btn;
+    }
+
+    // Draw existing images on page load
+    render();
+
+    // ── Type select toggle ──
+    const typeSelect     = document.getElementById("type");
+    const productSection = document.getElementById("amount");
+    if (typeSelect && productSection) {
+        typeSelect.addEventListener("change", function() {
+            productSection.style.display = this.value === "product" ? "flex" : "none";
+        });
+    }
+});function switchImage(thumbnail) {
     document.getElementById('mainImage').src = thumbnail.src;
     document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
     thumbnail.classList.add('active');
 }
-
-document.addEventListener('DOMContentLoaded', function() {
-const box = document.getElementById("uploadBox");
-const input = document.getElementById("fileInput");
-const thumbs = document.getElementById("thumbs");
-if (!box || !input || !thumbs) return;
-// Click opens file picker
-box.addEventListener("click", () => input.click());
-
-// Drag styling
-box.addEventListener("dragover", (e) => {
-  e.preventDefault();
-  box.classList.add("dragover");
-});
-
-box.addEventListener("dragleave", () => {
-  box.classList.remove("dragover");
-});
-
-
-box.addEventListener("drop", (e) => {
-  e.preventDefault();
-  box.classList.remove("dragover");
-
-  selectedFiles = selectedFiles.concat(Array.from(e.dataTransfer.files));
-  render();
-});
-function syncInput() {
-  const dt = new DataTransfer();
-  selectedFiles.forEach(f => dt.items.add(f));
-  input.files = dt.files;
-}
-function render() {
-  thumbs.innerHTML = "";
-  box.innerHTML = `<span class="upload-text">Click or drop images</span>`;
-
-  selectedFiles.forEach((file, index) => {
-    const reader = new FileReader();
-
-    reader.onload = (e) => {
-      const img = document.createElement("img");
-      img.src = e.target.result;
-
-      if (index === 0) {
-        box.innerHTML = "";
-        box.appendChild(img);
-      } else {
-        thumbs.appendChild(img);
-      }
-    };
-
-    reader.readAsDataURL(file);
-  });
-}
-// File select
-input.addEventListener("change", (e) => {
-  selectedFiles = selectedFiles.concat(Array.from(e.target.files));
-  render();
-});
-document.querySelector("form").addEventListener("submit", () => {
-  const dt = new DataTransfer();
-
-  selectedFiles.forEach(file => dt.items.add(file));
-
-  input.files = dt.files;
-});
-let imageSet = new Set();
-
-function handleFiles(files) {
-
-  thumbs.innerHTML = "";
-  box.innerHTML = `<span class="upload-text">Click or drop images</span>`;
-
-  Array.from(files).forEach((file, index) => {
-    const reader = new FileReader();
-
-    reader.onload = (e) => {
-      const src = e.target.result;
-
-      const img = document.createElement("img");
-      img.src = src;
-
-      // main image = first file only
-      if (index === 0) {
-        box.innerHTML = "";
-        box.appendChild(img);
-      } else {
-        thumbs.appendChild(img);
-      }
-
-      // swap logic
-      img.addEventListener("click", () => {
-        const main = box.querySelector("img");
-        if (!main) return;
-
-        const temp = main.src;
-        main.src = img.src;
-        img.src = temp;
-      });
-    };
-
-    reader.readAsDataURL(file);
-  });
-}
-
-
-
-  const typeSelect = document.getElementById("type");
-  const productSection = document.getElementById("amount");
-
-  typeSelect.addEventListener("change", function () {
-  if (this.value === "product") {
-      productSection.style.display = "flex";
-    } else {
-      productSection.style.display = "none";
-    }
-})
-});

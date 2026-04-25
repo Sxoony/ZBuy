@@ -19,6 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$email]);
 
         if ($stmt->fetch()) {
+
             $error = 'That email is already registered.';
         } else {
 
@@ -49,9 +50,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
    
    
 }
+
  $stmt = $pdo->prepare('SELECT * FROM listings WHERE NOT(status="sold")');
 $stmt->execute();
 $listings = $stmt->fetchAll();
+    
+if (isLoggedIn()){
+$stmt = $pdo->prepare('SELECT 
+    t.transaction_id,
+    IF(t.buyer_id = ?, l.seller_id, t.buyer_id) AS receiver_id
+FROM transactions t
+INNER JOIN listings l ON l.listing_id = t.listing_id
+LEFT JOIN ratings r ON (
+    r.transaction_id = t.transaction_id 
+    AND r.reviewer_id = ?
+)
+WHERE (t.buyer_id = ? OR l.seller_id = ?)
+  AND t.transaction_id IS NOT NULL 
+  AND t.transaction_id > 0
+  AND r.rating_id IS NULL
+LIMIT 1');
+$stmt->execute([$_SESSION['user_id'],$_SESSION['user_id'],$_SESSION['user_id'],$_SESSION['user_id']]);
+$eligibleTransaction = $stmt->fetchAll();
+$receiverId=$eligibleTransaction[0]['receiver_id'];
+}
+
 ?>
 
 
@@ -81,10 +104,9 @@ $listings = $stmt->fetchAll();
         </span>
         <ul> 
            <button class="label" id ="sideBarBrowseBtn">Browse</button><br><br>
-            <button class="label" id ="sideBarBuyeBtn">Buy</button><br><br>
-            <button class="label" id ="sideBarSellBtn"><a href="listings/listing-create-edit (sell).php">Sell</a></button><br><br>
+            <button class="label" id ="sideBarSellBtn">Sell</button><br><br>
    <button class="label" id="sideBarMessagesBtn">
-    <a href="communication/messages.php">Messages</a>
+   Message
 </button>
         </ul>
     </div>
@@ -99,7 +121,7 @@ $listings = $stmt->fetchAll();
             <a href="index.php">Home</a>
             <a href="profile/profile-view.php">Account</a>
             <a href="home/auth/settings.php">Settings</a>
-            <img src="img/notificationbell.png" alt="placeholder.jpg" class="homeIcons" id="notificationIcon">
+            <img src="img/notificationbell.png" alt="placeholder.jpg" class="homeIcons" id="notificationOpen">
  
                 <img src="img/settings.png" alt="Settings" class="homeIcons" class="viewAccount" id="viewAccount" >
    
@@ -129,11 +151,10 @@ $listings = $stmt->fetchAll();
     <!-- ACCOUNT MODAL -->
     <dialog class="accountModal" id="accountModal">
 
-        <div class="profile-container" id="profile-container">
 
             <form class="profileCard" method="POST">
 
-                <img src="img/confusedcat.png" alt="Guest Profile" class="accountIcons">
+                <img src="img/<?php if (isLoggedIn()):?><?=sanitize_string($_SESSION['profile_picture_path'] ?? "guest.png")?><?php endif;?>" alt="Guest Profile"  class="accountIcons">
 
                 <div class="profileName">
                     <?php if (isLoggedIn()): ?>
@@ -152,11 +173,11 @@ $listings = $stmt->fetchAll();
 
             </button>
 
-            <button id="logoutBtn">
+            <button id="logOutBtn">
                 <?php if (isLoggedIn()): ?>
-                <a href="home/auth/logout.php">Logout</a>
+                Logout
                 <?php else: ?>
-                <a href="home/auth/login.php">Login</a>
+               Login
                 <?php endif; ?>
             </button>
 
@@ -166,17 +187,39 @@ $listings = $stmt->fetchAll();
                 Register
             </button>
 
-        </div>
+  
 
     </dialog>
 
+     <dialog id="successModal" >
+
+        <form action="" id = "successForm" method ="POST" class="register-modal-content">
+
+            <span class="close-btn">
+                &times;
+            </span>
+
+            <h2>Success!</h2>
+<?php if ($modal_error): ?>
+    <div class="error-banner"><?= sanitize_string($modal_error) ?></div>
+<?php endif; ?>
+           
+            <button type="submit" name="closeSuccess" value="Register" id="closeSuccess" class="registerbtn">
+
+                Return To Home 
+                
+
+            </button>
+        </form>
+
+    </dialog>
 
     <!-- REGISTER MODAL -->
     <dialog id="registerModal" >
 
         <form action="" id = "registerMForm" method ="POST" class="register-modal-content">
 
-            <span class="close-btn">
+            <span class="close-btn" id ="close-btn">
                 &times;
             </span>
 
@@ -191,7 +234,9 @@ $listings = $stmt->fetchAll();
             <input type="password" id="passwordRegModal" name="modal_password" class="password" required placeholder="Password">
  <small  class="error-message" id = "passErrorM" name="passError"></small>
             <br>
-
+<?php if ($error): ?>
+    <div class="error-banner"><?= sanitize_string($error) ?></div>
+<?php endif; ?><br>
             <button type="submit" name="register_user" value="Register" id="registerButtonPopup" class="registerbtn">
 
                 Register
@@ -205,7 +250,30 @@ $listings = $stmt->fetchAll();
     document.addEventListener('DOMContentLoaded', () => popup.showModal());
 <?php endif; ?>
 
+<dialog id="reviewModal">
+    <form method="POST" action="/PROJECT/public_site/communication/rate.php" id="reviewForm">
+     
 
+        <button type="button" class="close-btn" id="closeReview">&times;</button>
+        <h2>Leave a Review</h2>
+   <input type="text" name="transaction_id" value="<?= (int)$eligibleTransaction ?>">
+        <input type="text" name="receiver_id" value="<?= (int)$receiverId ?>">
+        <label for="reviewScore">Rating (0–5)</label>
+        <input type="range" name="score" id="reviewScore"
+               min="0" max="5" step="0.5" value="0"
+               class="rating" style="--val:0"
+               oninput="this.style.setProperty('--val', this.value)">
+        <span id="scoreDisplay">0 / 5</span>
+
+        <label for="reviewComment">Comment</label>
+        <textarea name="comment" id="reviewComment"
+                  placeholder="Describe your experience..."
+                  rows="4" maxlength="500"></textarea>
+        <small class="error-message" id="reviewError"></small>
+
+        <button type="submit" name="submitReview">Submit Review</button>
+    </form>
+</dialog>
     <script src="js/script.js"></script>
 
 </body>

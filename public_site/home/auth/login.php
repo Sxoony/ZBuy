@@ -83,6 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="switch-link">
         Don't have an account?
         <a href="register.php">Register</a>
+        <p>Or <a href="../../index.php">continue as guest</a></p>
     </div>
 </div>
 
