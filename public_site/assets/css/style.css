@@ -36,6 +36,7 @@ p { color: var(--text-light); }
 
 /* LAYOUT */
 .sidebar {
+    display: block;
   width: 260px;
   height: 100vh;
   background: var(--bg-sidebar);

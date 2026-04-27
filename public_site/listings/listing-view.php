@@ -52,7 +52,7 @@ $images = !empty($listing['media_path'])
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body>
-
+<?php require_once '../reuse/nav.php';?>
 <div class="container py-4">
     <div class="row g-4">
 

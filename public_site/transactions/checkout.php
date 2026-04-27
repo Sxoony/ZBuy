@@ -121,7 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirmPayment'])) {
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body class="checkout-page bg-light">
-
+<?php require_once '../reuse/nav.php';?>
 <div class="container py-4">
     <div class="row g-4">
 

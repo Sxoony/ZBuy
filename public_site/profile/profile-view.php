@@ -101,15 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['saveSettings'])) {
 <body>
 
 <!-- ── NAV ── -->
-<nav class="navbar-custom d-flex justify-content-between align-items-center px-4" style="height:56px; position:sticky; top:0; z-index:100;">
-    <a href="/PROJECT/public_site/index.php" class="fw-bold text-decoration-none" style="color:var(--primary);">Marketplace</a>
-    <div class="d-flex align-items-center gap-3">
-        <a href="/PROJECT/public_site/communication/messages.php" class="text-decoration-none" style="color:var(--text-dark);">Messages</a>
-        <a href="/PROJECT/public_site/home/auth/logout.php" class="text-decoration-none text-muted">Logout</a>
-        <img src="../img/<?= sanitize_string($profileUser['profile_picture_path'] ?? 'guest.png') ?>"
-             class="avatar" style="width:32px; height:32px;">
-    </div>
-</nav>
+<?php require_once '../reuse/nav.php';?>
 
 <div class="container py-4">
 

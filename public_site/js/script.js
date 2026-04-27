@@ -20,23 +20,8 @@ if (indexLogout){
     })
 }
 
-const togglePassword = document.getElementById('togglePassword');
-const settingsPassword = document.getElementById('settingsPassword');
 
-if (togglePassword) {
-    togglePassword.addEventListener('click', function() {
-        const isPassword = settingsPassword.type === 'password';
-        settingsPassword.type = isPassword ? 'text' : 'password';
-        this.textContent = isPassword ? '🙈' : '👁';
-    });
-}
-const editProfile = document.getElementById('profileEditBtn');
-const settingsModal = document.getElementById('settingsModal');
-if (editProfile) {
-    editProfile.addEventListener('click', function() {
-        settingsModal.showModal();
-    });
-}
+
 const darkModeToggle = document.getElementById('darkModeToggle');
 
 // Apply saved preference on every page load
@@ -51,14 +36,15 @@ if (darkModeToggle) {
         localStorage.setItem('darkMode', this.checked);
     });
 }
+const reviewbtn =document.getElementById('navReviewModal');
 const reviewModal     = document.getElementById('reviewModal');
 const openReviewBtn   = document.getElementById('notificationOpen'); // whatever triggers it
 const closeReviewBtn  = document.getElementById('closeReview');
 const reviewScore     = document.getElementById('reviewScore');
 const scoreDisplay    = document.getElementById('scoreDisplay');
 
-if (openReviewBtn) {
-    openReviewBtn.addEventListener('click', () => reviewModal.showModal());
+if (reviewbtn) {
+    reviewbtn.addEventListener('click', () => reviewModal.showModal());
 }
 
 if (closeReviewBtn) {
@@ -244,7 +230,7 @@ document.getElementById("confirmPayment").addEventListener("click", () => {
 }
 
 const popup = document.getElementById("registerModal");
-const openRegister = document.getElementById("registerUser");
+const openRegister = document.getElementById("registerGuest");
 const closeBtn = document.getElementById('close-btn');
 const registerMForm = document.getElementById("registerMForm");
 
