@@ -117,245 +117,179 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirmPayment'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkout</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
-<body class="checkout-page">
+<body class="checkout-page bg-light">
 
-<div class="checkout-wrapper">
+<div class="container py-4">
+    <div class="row g-4">
 
-    <!-- LEFT: payment form -->
-    <div class="checkout-main">
+        <!-- LEFT: FORM -->
+        <div class="col-lg-8">
+            <div class="checkout-main">
 
-        <h1 class="checkout-title">Checkout</h1>
+                <h1 class="checkout-title mb-4">Checkout</h1>
 
-        <?php if ($error): ?>
-            <div class="error-banner"><?= sanitize_string($error) ?></div>
-        <?php endif; ?>
+                <?php if ($error): ?>
+                    <div class="alert alert-danger"><?= sanitize_string($error) ?></div>
+                <?php endif; ?>
 
-        <form action="" method="POST" id="checkoutForm">
+                <form action="" method="POST" id="checkoutForm">
 
-            <!-- Delivery info -->
-            <div class="checkout-card">
-                <h2 class="checkout-card-heading">Delivery Details</h2>
+                    <!-- DELIVERY -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Delivery Details</h5>
 
-                <div class="checkout-field">
-                    <label for="deliveryAddress">Delivery Address</label>
-                    <input type="text" name="deliveryAddress" id="deliveryAddress"
-                           placeholder="Street address, city, postal code" required>
-                    <small class="error-message" id="addressError"></small>
-                </div>
+                            <div class="mb-3">
+                                <label for="deliveryAddress" class="form-label">Delivery Address</label>
+                                <input type="text" class="form-control"
+                                       name="deliveryAddress" id="deliveryAddress"
+                                       placeholder="Street address, city, postal code" required>
+                                <small class="text-danger error-message" id="addressError"></small>
+                            </div>
 
-                <div class="checkout-field">
-                    <label for="deliveryNote">Note to Seller <span class="optional-tag">optional</span></label>
-                    <textarea name="deliveryNote" id="deliveryNote"
-                              placeholder="Any special instructions..."
-                              rows="3"></textarea>
-                </div>
-            </div>
-
-            <!-- Fake card form -->
-            <div class="checkout-card">
-                <h2 class="checkout-card-heading">Payment Details</h2>
-                <p class="checkout-card-sub">This is a simulated payment. No real transaction will occur.</p>
-
-                <div class="checkout-field">
-                    <label for="cardName">Name on Card</label>
-                    <input type="text" name="cardName" id="cardName"
-                           placeholder="e.g. John Smith" required
-                           value="<?= sanitize_string($_POST['cardName'] ?? '') ?>">
-                    <small class="error-message" id="cardNameError"></small>
-                </div>
-
-                <div class="checkout-field">
-                    <label for="cardNumber">Card Number</label>
-                    <div class="card-number-wrap">
-                        <input type="text" name="cardNumber" id="cardNumber"
-                               placeholder="1234 5678 9012 3456"
-                               maxlength="19" required
-                               value="<?= sanitize_string($_POST['cardNumber'] ?? '') ?>">
-                        <span class="card-icon" id="cardIcon">💳</span>
-                    </div>
-                    <small class="error-message" id="cardNumberError"></small>
-                </div>
-
-                <div class="checkout-row">
-                    <div class="checkout-field">
-                        <label for="cardExpiry">Expiry Date</label>
-                        <input type="text" name="cardExpiry" id="cardExpiry"
-                               placeholder="MM/YY" maxlength="5" required
-                               value="<?= sanitize_string($_POST['cardExpiry'] ?? '') ?>">
-                        <small class="error-message" id="cardExpiryError"></small>
+                            <div class="mb-3">
+                                <label for="deliveryNote" class="form-label">
+                                    Note to Seller <span class="text-muted">(optional)</span>
+                                </label>
+                                <textarea class="form-control"
+                                          name="deliveryNote" id="deliveryNote"
+                                          rows="3"></textarea>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="checkout-field">
-                        <label for="cardCvv">CVV</label>
-                        <input type="text" name="cardCvv" id="cardCvv"
-                               placeholder="123" maxlength="4" required
-                               value="<?= sanitize_string($_POST['cardCvv'] ?? '') ?>">
-                        <small class="error-message" id="cardCvvError"></small>
+                    <!-- PAYMENT -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Payment Details</h5>
+                            <p class="text-muted small">
+                                This is a simulated payment. No real transaction will occur.
+                            </p>
+
+                            <div class="mb-3">
+                                <label for="cardName" class="form-label">Name on Card</label>
+                                <input type="text" class="form-control"
+                                       name="cardName" id="cardName"
+                                       value="<?= sanitize_string($_POST['cardName'] ?? '') ?>">
+                                <small class="text-danger error-message" id="cardNameError"></small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="cardNumber" class="form-label">Card Number</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control"
+                                           name="cardNumber" id="cardNumber"
+                                           maxlength="19"
+                                           value="<?= sanitize_string($_POST['cardNumber'] ?? '') ?>">
+                                    <span class="input-group-text" id="cardIcon">💳</span>
+                                </div>
+                                <small class="text-danger error-message" id="cardNumberError"></small>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="cardExpiry" class="form-label">Expiry</label>
+                                    <input type="text" class="form-control"
+                                           name="cardExpiry" id="cardExpiry"
+                                           maxlength="5"
+                                           value="<?= sanitize_string($_POST['cardExpiry'] ?? '') ?>">
+                                    <small class="text-danger error-message" id="cardExpiryError"></small>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="cardCvv" class="form-label">CVV</label>
+                                    <input type="text" class="form-control"
+                                           name="cardCvv" id="cardCvv"
+                                           maxlength="4"
+                                           value="<?= sanitize_string($_POST['cardCvv'] ?? '') ?>">
+                                    <small class="text-danger error-message" id="cardCvvError"></small>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
+
+                    <!-- BUTTON -->
+                    <button type="submit"
+                            name="confirmPayment"
+                            id="confirmPayment"
+                            class="btn btn-success w-100 py-2">
+                        Pay <?= formatPrice($grandTotal) ?>
+                    </button>
+
+                </form>
             </div>
+        </div>
 
-            <button type="submit" name="confirmPayment" class="btn-confirm-payment" id="confirmPayment">
-                Pay <?= formatPrice($grandTotal) ?>
-            </button>
+        <!-- RIGHT: SUMMARY -->
+        <div class="col-lg-4">
+            <div class="card position-sticky" style="top: 20px;">
+                <div class="card-body">
 
-        </form>
-    </div>
+                    <h5 class="card-title">Order Summary</h5>
 
-    <!-- RIGHT: order summary -->
-    <div class="checkout-sidebar">
+                    <!-- Listing -->
+                    <div class="d-flex mb-3">
+                        <img src="../img/<?= sanitize_string($images[0]) ?>"
+                             class="rounded me-3"
+                             style="width:80px; height:80px; object-fit:cover;">
+                        <div>
+                            <p class="mb-1 fw-bold"><?= sanitize_string($listing['title']) ?></p>
+                            <small class="text-muted">
+                                Sold by
+                                <a href="/public_site/profile/profile-view.php?user_id=<?= (int)$seller['user_id'] ?>">
+                                    <?= sanitize_string($seller['username']) ?>
+                                </a>
+                            </small>
+                        </div>
+                    </div>
 
-        <div class="checkout-card">
-            <h2 class="checkout-card-heading">Order Summary</h2>
+                    <!-- Quantity -->
+                    <?php if ((int)$listing['amount'] > 1): ?>
+                    <div class="mb-3">
+                        <label class="form-label">Quantity</label>
+                        <select class="form-select"
+                                name="quantity"
+                                id="quantitySelect"
+                                form="checkoutForm"
+                                onchange="this.form.submit()">
+                            <?php for ($i = 1; $i <= min((int)$listing['amount'], 10); $i++): ?>
+                                <option value="<?= $i ?>" <?= $quantity === $i ? 'selected' : '' ?>>
+                                    <?= $i ?>
+                                </option>
+                            <?php endfor; ?>
+                        </select>
+                    </div>
+                    <?php endif; ?>
 
-            <!-- Listing preview -->
-            <div class="order-listing-preview">
-                <img src="../img/<?= sanitize_string($images[0]) ?>"
-                     alt="<?= sanitize_string($listing['title']) ?>"
-                     class="order-listing-img">
-                <div class="order-listing-info">
-                    <p class="order-listing-title"><?= sanitize_string($listing['title']) ?></p>
-                    <p class="order-listing-seller">
-                        Sold by
-                        <a href="/public_site/profile/profile-view.php?user_id=<?= (int)$seller['user_id'] ?>">
-                            <?= sanitize_string($seller['username']) ?>
-                        </a>
-                    </p>
+                    <!-- Breakdown -->
+                    <div class="border-top pt-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Items</span>
+                            <span><?= formatPrice($itemTotal) ?></span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Escrow fee</span>
+                            <span><?= formatPrice($escrowFee) ?></span>
+                        </div>
+                        <div class="d-flex justify-content-between fw-bold mt-2">
+                            <span>Total</span>
+                            <span><?= formatPrice($grandTotal) ?></span>
+                        </div>
+                    </div>
+
+                    <!-- Notice -->
+                    <div class="alert alert-light mt-3 small">
+                        🔒 Payment held in escrow until delivery confirmed.
+                    </div>
+
                 </div>
-            </div>
-
-            <!-- Quantity selector -->
-            <?php if ((int)$listing['amount'] > 1): ?>
-            <div class="checkout-field">
-                <label for="quantitySelect">Quantity</label>
-                <select name="quantity" id="quantitySelect" form="checkoutForm"
-                        onchange="this.form.submit()">
-                    <?php for ($i = 1; $i <= min((int)$listing['amount'], 10); $i++): ?>
-                        <option value="<?= $i ?>" <?= $quantity === $i ? 'selected' : '' ?>>
-                            <?= $i ?>
-                        </option>
-                    <?php endfor; ?>
-                </select>
-            </div>
-            <?php endif; ?>
-
-            <!-- Price breakdown -->
-            <div class="order-breakdown">
-                <div class="order-breakdown-row">
-                    <span>Item<?= $quantity > 1 ? 's (' . $quantity . ')' : '' ?></span>
-                    <span><?= formatPrice($itemTotal) ?></span>
-                </div>
-                <div class="order-breakdown-row">
-                    <span>Escrow fee <small>(2%)</small></span>
-                    <span><?= formatPrice($escrowFee) ?></span>
-                </div>
-                <div class="order-breakdown-row total">
-                    <span>Total</span>
-                    <span><?= formatPrice($grandTotal) ?></span>
-                </div>
-            </div>
-
-            <!-- Escrow notice -->
-            <div class="escrow-notice">
-                <span class="escrow-icon">🔒</span>
-                <p>Your payment is held securely in escrow and only released to the seller once you confirm delivery.</p>
             </div>
         </div>
 
     </div>
-
-     
-
-
 </div>
-
-<script src="../js/script.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-
-    // ── Card number formatting ──
-    const cardNumber = document.getElementById('cardNumber');
-    if (cardNumber) {
-        cardNumber.addEventListener('input', function() {
-            let val = this.value.replace(/\D/g, '').substring(0, 16);
-            this.value = val.replace(/(.{4})/g, '$1 ').trim();
-
-            // Basic card type detection for icon
-            const icon = document.getElementById('cardIcon');
-            if (icon) {
-                if (val.startsWith('4'))       icon.textContent = '💳'; // Visa
-                else if (val.startsWith('5'))  icon.textContent = '💳'; // Mastercard
-                else                           icon.textContent = '💳';
-            }
-        });
-    }
-
-    // ── Expiry formatting ──
-    const cardExpiry = document.getElementById('cardExpiry');
-    if (cardExpiry) {
-        cardExpiry.addEventListener('input', function() {
-            let val = this.value.replace(/\D/g, '').substring(0, 4);
-            if (val.length >= 2) val = val.substring(0, 2) + '/' + val.substring(2);
-            this.value = val;
-        });
-    }
-
-    // ── CVV numbers only ──
-    const cardCvv = document.getElementById('cardCvv');
-    if (cardCvv) {
-        cardCvv.addEventListener('input', function() {
-            this.value = this.value.replace(/\D/g, '').substring(0, 4);
-        });
-    }
-
-    // ── Client-side validation ──
-    const checkoutForm = document.getElementById('checkoutForm');
-    if (checkoutForm) {
-        checkoutForm.addEventListener('submit', function(e) {
-
-            // Don't validate on quantity change (no confirmPayment in that submit)
-            if (!document.activeElement.name === 'confirmPayment') return;
-
-            let valid = true;
-            document.querySelectorAll('.error-message').forEach(m => m.textContent = '');
-
-            const address = document.getElementById('deliveryAddress').value.trim();
-            if (!address) {
-                document.getElementById('addressError').textContent = 'Delivery address is required';
-                valid = false;
-            }
-
-            const name = document.getElementById('cardName').value.trim();
-            if (!name) {
-                document.getElementById('cardNameError').textContent = 'Name on card is required';
-                valid = false;
-            }
-
-            const num = document.getElementById('cardNumber').value.replace(/\s/g, '');
-            if (num.length < 13) {
-                document.getElementById('cardNumberError').textContent = 'Enter a valid card number';
-                valid = false;
-            }
-
-            const expiry = document.getElementById('cardExpiry').value;
-            if (!/^\d{2}\/\d{2}$/.test(expiry)) {
-                document.getElementById('cardExpiryError').textContent = 'Enter expiry as MM/YY';
-                valid = false;
-            }
-
-            const cvv = document.getElementById('cardCvv').value;
-            if (cvv.length < 3) {
-                document.getElementById('cardCvvError').textContent = 'Enter a valid CVV';
-                valid = false;
-            }
-
-            if (!valid) e.preventDefault();
-
-        });
-    }
-});
-</script>
 </body>
 </html>

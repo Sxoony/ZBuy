@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (!validate_email($email)) {
         $error = 'Invalid email address.';
     } else {
-        
+
         $stmt = $pdo->prepare('SELECT user_id FROM users WHERE email = ? LIMIT 1');
         $stmt->execute([$email]);
 
@@ -30,33 +30,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $userId = $pdo->lastInsertId();
 
-           
 
-            
- $stmt2 = $pdo->prepare('UPDATE users SET username = ? WHERE user_id = ?');
+
+
+            $stmt2 = $pdo->prepare('UPDATE users SET username = ? WHERE user_id = ?');
             $stmt2->execute(['user' . $userId, $userId]);
             loginUser([
                 'user_id'  => $userId,
                 'username' => 'user' . $userId,
                 'email'    => $email,
                 'role'     => 'user',
-                'is_banned'=> 0,
+                'is_banned' => 0,
             ]);
-            redirect('/PROJECT/public_site/index.php'); 
+            redirect('/PROJECT/public_site/index.php');
         }
     }
-
-
-   
-   
 }
 
- $stmt = $pdo->prepare('SELECT * FROM listings WHERE NOT(status="sold")');
+$stmt = $pdo->prepare('SELECT * FROM listings WHERE NOT(status="sold")');
 $stmt->execute();
 $listings = $stmt->fetchAll();
-    
-if (isLoggedIn()){
-$stmt = $pdo->prepare('SELECT 
+
+if (isLoggedIn()) {
+    $stmt = $pdo->prepare('SELECT 
     t.transaction_id,
     IF(t.buyer_id = ?, l.seller_id, t.buyer_id) AS receiver_id
 FROM transactions t
@@ -70,9 +66,18 @@ WHERE (t.buyer_id = ? OR l.seller_id = ?)
   AND t.transaction_id > 0
   AND r.rating_id IS NULL
 LIMIT 1');
-$stmt->execute([$_SESSION['user_id'],$_SESSION['user_id'],$_SESSION['user_id'],$_SESSION['user_id']]);
-$eligibleTransaction = $stmt->fetchAll();
-$receiverId=$eligibleTransaction[0]['receiver_id'];
+
+    $stmt->execute([$_SESSION['user_id'], $_SESSION['user_id'], $_SESSION['user_id'], $_SESSION['user_id']]);
+ 
+    $eligibleTransaction = $stmt->fetchAll();
+    if ($eligibleTransaction!=null){
+    $receiverId = $eligibleTransaction[0]['receiver_id'];
+    }else{
+        $receiverId=null;
+    }
+    $stmt = $pdo->prepare('SELECT * FROM users WHERE user_id=?');
+    $stmt->execute([$_SESSION['user_id']]);
+    $profileUser = $stmt->fetchAll();
 }
 
 ?>
@@ -86,196 +91,282 @@ $receiverId=$eligibleTransaction[0]['receiver_id'];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome - My Tech Store</title>
-
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-<body >
+<body>
 
     <!-- SIDEBAR -->
-    <div class="sidebar" id="sideBar">
+    <div class="sidebar">
 
         <h2>Marketplace</h2>
 
-        <span class="searchContainer">
-            <img src="img/search.png" alt="Search Icon" class="homeIcons">
+        <div class="flex flex-col gap-sm">
+            <button class="btn-custom" id="sideBarBrowseBtn">Browse</button>
+            <button class="btn-custom" id="sideBarSellBtn">Sell</button>
+            <button class="btn-custom" id="sideBarMessagesBtn">Messages</button>
+        </div>
 
-            <input type="search" name="search" id="searchBar" placeholder="Search">
-        </span>
-        <ul> 
-           <button class="label" id ="sideBarBrowseBtn">Browse</button><br><br>
-            <button class="label" id ="sideBarSellBtn">Sell</button><br><br>
-   <button class="label" id="sideBarMessagesBtn">
-   Message
-</button>
-        </ul>
     </div>
 
 
-    <!-- MAIN CONTENT -->
+    <!-- MAIN -->
     <div class="main-content">
 
-        <!-- NAVBAR -->
-        <nav class="headerNav">
+        <!-- NAV -->
+        <nav class="headerNav d-flex justify-content-between align-items-center">
 
-            <a href="index.php">Home</a>
-            <a href="profile/profile-view.php">Account</a>
-            <a href="home/auth/settings.php">Settings</a>
-            <img src="img/notificationbell.png" alt="placeholder.jpg" class="homeIcons" id="notificationOpen">
- 
-                <img src="img/settings.png" alt="Settings" class="homeIcons" class="viewAccount" id="viewAccount" >
-   
+            <div class="d-flex gap-3">
+                <a href="index.php">Home</a>
+                <a href="profile/profile-view.php">Account</a>
+                <a href="home/auth/settings.php">Settings</a>
+            </div>
+
+            <div class="d-flex align-items-center gap-3">
+
+                <div class="searchContainer d-flex align-items-center gap-2">
+                    <img src="img/search.png" width="18">
+                    <input type="search" class="form-control form-control-sm" style="width:180px;">
+                </div>
+
+                <img src="img/notificationbell.png" width="20" id="notificationOpen">
+                <img src="img/settings.png" width="20" id="viewAccount">
+
+            </div>
 
         </nav>
 
 
-        <!-- PRODUCT SECTION -->
-        <div class="product-section" id="product-section">
+        <!-- PRODUCTS -->
+        <div class="container py-4">
 
-            <?php
-            foreach ($listings as $listing) {
- echo '<div class="product-card">';
-                echo '<img src="img/' . sanitize_string($listing['media_path'] ?? 'placeholder.png') . '" alt="Product Image">';
-                echo '<h3> <a href="listings/listing-view.php?listing_id=' . (int)$listing['listing_id'] . '">' . sanitize_string($listing['title']) . '</a> <span style=color:' . ($listing['status'] == 'sold' ? 'red' : 'green') .  '>(' . htmlspecialchars(sanitize_string($listing['status'])) . ')</span></h3>'; 
-                echo '<p>$' . sanitize_string($listing['price']) . '</p>';
-                echo '</div>';
-            }
-?>
-            
+            <div class="row g-4">
 
-        
+                <?php foreach ($listings as $listing): ?>
+                    <div class="col-md-4 col-lg-3">
+
+                        <div class="card h-100 shadow-sm">
+
+                            <img class="card-img-top"
+                                src="img/<?= sanitize_string($listing['media_path'] ?? 'placeholder.png') ?>"
+                                style="height:180px; object-fit:cover;">
+
+                            <div class="card-body">
+
+                                <h6 class="card-title mb-1">
+                                    <a href="listings/listing-view.php?listing_id=<?= (int)$listing['listing_id'] ?>">
+                                        <?= sanitize_string($listing['title']) ?>
+                                    </a>
+                                </h6>
+
+                                <span class="badge <?= $listing['status'] === 'sold' ? 'bg-danger' : 'bg-success' ?>">
+                                    <?= sanitize_string($listing['status']) ?>
+                                </span>
+
+                                <p class="fw-bold mt-2 mb-0 text-primary">
+                                    $<?= sanitize_string($listing['price']) ?>
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+                <?php endforeach; ?>
+
+            </div>
+
+        </div>
 
     </div>
 
 
     <!-- ACCOUNT MODAL -->
-    <dialog class="accountModal" id="accountModal">
 
+    <dialog id="accountModal" class="dialog">
 
-            <form class="profileCard" method="POST">
+        <div class="d-flex align-items-center gap-2 mb-3">
 
-                <img src="img/<?php if (isLoggedIn()):?><?=sanitize_string($_SESSION['profile_picture_path'] ?? "guest.png")?><?php endif;?>" alt="Guest Profile"  class="accountIcons">
+            <img class="rounded-circle" width="40"
+                src="img/<?php if (isLoggedIn()): ?><?= sanitize_string($_SESSION['profile_picture_path'] ?? `guest.png`) ?> <?php else:?><?= sanitize_string(`guest.png`) ?> <?php endif; ?>" alt="Guest Profile">
 
-                <div class="profileName">
-                    <?php if (isLoggedIn()): ?>
-                    <?= sanitize_string($_SESSION['username']) ?>
-                    <?php else: ?>
-                    Guest
-                    <?php endif; ?>
+            <strong>
+                <?= isLoggedIn() ? sanitize_string($_SESSION['username']) : 'Guest' ?>
+            </strong>
 
-                </div>
-                <a href="home/auth/settings.php" class="viewAccount">
-                    Account Settings
-                </a>
+        </div>
 
+        <div class="d-flex flex-column gap-2">
 
-            </form>
+            <a href="home/auth/settings.php" class="btn btn-outline-secondary">
+                Account Settings
+            </a>
 
+            <button class="btn btn-primary" id="logOutBtn">
+                <?= isLoggedIn() ? 'Logout' : 'Login' ?>
             </button>
 
-            <button id="logOutBtn">
-                <?php if (isLoggedIn()): ?>
-                Logout
-                <?php else: ?>
-               Login
-                <?php endif; ?>
-            </button>
-
-            <br><br>
-
-            <button id="registerUser">
+            <button class="btn btn-outline-primary" id="openRegister">
                 Register
             </button>
 
-  
+            <button class="btn btn-light mt-2 close-dialog">
+                Close
+            </button>
+
+        </div>
 
     </dialog>
 
-     <dialog id="successModal" >
 
-        <form action="" id = "successForm" method ="POST" class="register-modal-content">
+    <!-- SUCCESS MODAL -->
+    <dialog id="successModal" class="dialog">
 
-            <span class="close-btn">
-                &times;
-            </span>
+        <form method="POST" class="flex flex-col gap-sm">
+
+            <button type="button" class="close-btn">&times;</button>
 
             <h2>Success!</h2>
-<?php if ($modal_error): ?>
-    <div class="error-banner"><?= sanitize_string($modal_error) ?></div>
-<?php endif; ?>
-           
-            <button type="submit" name="closeSuccess" value="Register" id="closeSuccess" class="registerbtn">
 
-                Return To Home 
-                
+            <?php if ($modal_error): ?>
+                <div class="error-banner"><?= sanitize_string($modal_error) ?></div>
+            <?php endif; ?>
 
-            </button>
+            <button class="btn-primary-custom">Return To Home</button>
+
         </form>
 
     </dialog>
+
 
     <!-- REGISTER MODAL -->
-    <dialog id="registerModal" >
+    <dialog id="registerModal" class="dialog">
 
-        <form action="" id = "registerMForm" method ="POST" class="register-modal-content">
+        <form method="POST" class="d-flex flex-column gap-2">
 
-            <span class="close-btn" id ="close-btn">
-                &times;
-            </span>
+            <h5>Create Account</h5>
 
-            <h2>Create Account</h2>
-<?php if ($modal_error): ?>
-    <div class="error-banner"><?= sanitize_string($modal_error) ?></div>
-<?php endif; ?>
-            <input type="email" id="emailRegModal" name="email" class="email" required placeholder="Email Address"value = "<?=  sanitize_string($_POST['email'] ?? '') ?>">
-                    <small  class="error-message" id = "emailErrorM" name="emailError"></small>
-            <br>
+            <input class="form-control"
+                type="email"
+                name="email"
+                placeholder="Email"
+                required>
 
-            <input type="password" id="passwordRegModal" name="modal_password" class="password" required placeholder="Password">
- <small  class="error-message" id = "passErrorM" name="passError"></small>
-            <br>
-<?php if ($error): ?>
-    <div class="error-banner"><?= sanitize_string($error) ?></div>
-<?php endif; ?><br>
-            <button type="submit" name="register_user" value="Register" id="registerButtonPopup" class="registerbtn">
+            <input class="form-control"
+                type="password"
+                name="modal_password"
+                placeholder="Password"
+                required>
 
-                Register
+            <?php if ($error): ?>
+                <div class="alert alert-danger"><?= sanitize_string($error) ?></div>
+            <?php endif; ?>
 
+            <button class="btn btn-primary">Register</button>
+
+            <button type="button" class="btn btn-light close-dialog">
+                Cancel
             </button>
-            
+
         </form>
 
     </dialog>
-<?php if ($modal_error): ?>
-    document.addEventListener('DOMContentLoaded', () => popup.showModal());
-<?php endif; ?>
 
-<dialog id="reviewModal">
-    <form method="POST" action="/PROJECT/public_site/communication/rate.php" id="reviewForm">
-     
 
-        <button type="button" class="close-btn" id="closeReview">&times;</button>
-        <h2>Leave a Review</h2>
-   <input type="text" name="transaction_id" value="<?= (int)$eligibleTransaction ?>">
-        <input type="text" name="receiver_id" value="<?= (int)$receiverId ?>">
-        <label for="reviewScore">Rating (0–5)</label>
-        <input type="range" name="score" id="reviewScore"
-               min="0" max="5" step="0.5" value="0"
-               class="rating" style="--val:0"
-               oninput="this.style.setProperty('--val', this.value)">
-        <span id="scoreDisplay">0 / 5</span>
+    <!-- REVIEW MODAL -->
+    <dialog id="reviewModal" class="dialog">
 
-        <label for="reviewComment">Comment</label>
-        <textarea name="comment" id="reviewComment"
-                  placeholder="Describe your experience..."
-                  rows="4" maxlength="500"></textarea>
-        <small class="error-message" id="reviewError"></small>
+        <form method="POST" class="d-flex flex-column gap-2"  id="reviewForm" action="/PROJECT/public_site/communication/rate.php">
 
-        <button type="submit" name="submitReview">Submit Review</button>
-    </form>
-</dialog>
+            <h5>Leave a Review</h5>
+
+            <input type="hidden" name="transaction_id"value="<?= (int)$eligibleTransaction ?>">
+            <input type="hidden" name="receiver_id"value="<?= (int)$receiverId ?>">
+
+            <label>Rating</label>
+            <input type="range"
+                class="rating form-range"
+                name="score"
+                id="reviewScore"
+                min="0" max="5" step="0.5"
+                style="--val:0"
+                oninput="this.style.setProperty('--val', this.value)">
+    <span id="scoreDisplay">0 / 5</span>
+            <textarea id="reviewComment" class="form-control"
+                name="comment"
+                placeholder="Write your review..."></textarea>
+<small class="error-message" id="reviewError"></small>
+            <button class="btn btn-primary" name="submitReview">Submit</button>
+
+            <button type="button" class="btn btn-light close-dialog">
+                Cancel
+            </button>
+
+        </form>
+
+    </dialog>
+
+  
     <script src="js/script.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
 
+            const accountModal = document.getElementById("accountModal");
+            const registerModal = document.getElementById("registerModal");
+
+            const openAccountBtn = document.getElementById("viewAccount");
+            const openRegisterBtn = document.getElementById("registerUser");
+            const openRegisterFromAccount = document.getElementById("openRegister");
+
+            // OPEN ACCOUNT
+            if (openAccountBtn) {
+                openAccountBtn.addEventListener("click", () => {
+                    accountModal.showModal();
+                });
+            }
+
+            // OPEN REGISTER
+            if (openRegisterBtn) {
+                openRegisterBtn.addEventListener("click", () => {
+                    registerModal.showModal();
+                });
+            }
+
+            // OPEN REGISTER FROM ACCOUNT
+            if (openRegisterFromAccount) {
+                openRegisterFromAccount.addEventListener("click", () => {
+                    accountModal.close();
+                    registerModal.showModal();
+                });
+            }
+
+            // CLOSE BUTTONS
+            document.querySelectorAll(".close-dialog").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    btn.closest("dialog").close();
+                });
+            });
+
+            // CLICK OUTSIDE TO CLOSE
+            document.querySelectorAll("dialog").forEach(dialog => {
+                dialog.addEventListener("click", (e) => {
+                    const rect = dialog.getBoundingClientRect();
+                    const inside =
+                        rect.top <= e.clientY &&
+                        e.clientY <= rect.bottom &&
+                        rect.left <= e.clientX &&
+                        e.clientX <= rect.right;
+
+                    if (!inside) {
+                        dialog.close();
+                    }
+                });
+            });
+
+        });
+    </script>
 </body>
 
 </html>

@@ -1,7 +1,7 @@
 const indexMessages=document.getElementById('sideBarMessagesBtn');
 if (indexMessages){
     indexMessages.addEventListener("click", function(e){
-      window.location.href="../communication/messages.php";
+      window.location.href="/PROJECT/public_site/communication/messages.php";
     })
 }
 
@@ -16,7 +16,7 @@ if (indexSell){
 const indexLogout =document.getElementById('logOutBtn');
 if (indexLogout){
     indexLogout.addEventListener("click", function(e){
-      window.location.href="../public_site/home/auth/logout.php";
+      window.location.href="/PROJECT/public_site/home/auth/logout.php";
     })
 }
 
@@ -297,28 +297,7 @@ if (registerMForm) {
    ACCOUNT MODAL
  */
 
-const accViewPopup = document.getElementById("viewAccount");
-const accPopup = document.getElementById("accountModal");
 
-if (accViewPopup) {
-
-    accViewPopup.addEventListener("click", () => {
-        accPopup.showModal();
-    });
-
-}
-
-if (accPopup) {
-
-    accPopup.addEventListener("click", function(event) {
-
-        if (event.target === accPopup) {
-            accPopup.close();
-        }
-
-    });
-
-}
 
 
 /* 
