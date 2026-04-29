@@ -71,6 +71,24 @@ WHERE (t.buyer_id = ? OR l.seller_id = ?)
         $eligibleTransaction=null;
     }
 
+
+
+    $reviewListing  = null;
+   $reviewReceiver = null;
+   if (!empty($eligibleTransaction)) {
+       $txId = (int)$eligibleTransaction;
+       $stmt = $pdo->prepare('
+           SELECT l.title, u.username
+           FROM transactions t
+           JOIN listings l ON l.listing_id = t.listing_id
+           JOIN users u ON u.user_id = IF(t.buyer_id = ?, l.seller_id, t.buyer_id)
+           WHERE t.transaction_id = ?
+       ');
+       $stmt->execute([$_SESSION['user_id'], $txId]);
+       $reviewCtx = $stmt->fetch();
+       $reviewListing  = $reviewCtx['title']    ?? '';
+       $reviewReceiver = $reviewCtx['username']  ?? '';
+   }
     }
 // Nav depth = 0 (we are at public_site root)
 $nav_depth = 0;
@@ -199,37 +217,84 @@ $nav_depth = 0;
     </form>
 </dialog>
 <!-- REVIEW MODAL -->
-    <dialog id="reviewModal" class="dialog">
-
-        <form method="POST" class="d-flex flex-column gap-2"  id="reviewForm" action="/PROJECT/public_site/communication/rate.php">
-
-            <h5>Leave a Review</h5>
-
-            <input type="text" name="transaction_id"value="<?= (int)$eligibleTransaction ?>">
-            <input type="text" name="receiver_id"value="<?= (int)$receiverId ?>">
-
-            <label>Rating</label>
-            <input type="range"
-                class="rating form-range"
-                name="score"
-                id="reviewScore"
-                min="0" max="5" step="0.5"
-                style="--val:0"
-                oninput="this.style.setProperty('--val', this.value)">
-    <span id="scoreDisplay">0 / 5</span>
-            <textarea id="reviewComment" class="form-control"
-                name="comment"
-                placeholder="Write your review..."></textarea>
-<small class="error-message" id="reviewError"></small>
-            <button class="btn btn-primary" name="submitReview">Submit</button>
-
-            <button type="button" class="btn btn-light close-dialog">
-                Cancel
-            </button>
-
-        </form>
-
-    </dialog>
+<dialog id="reviewModal" class="dialog">
+    <form method="POST" id="reviewForm"
+          action="/PROJECT/public_site/communication/rate.php"
+          class="d-flex flex-column gap-2">
+ 
+        <button type="button" class="close-btn close-dialog">&times;</button>
+ 
+        <h5 class="mb-0">Leave a Review</h5>
+ 
+        <?php if (!empty($reviewListing)): ?>
+        <div class="review-modal-context">
+            <div class="review-modal-context__row">
+                <span class="review-modal-context__label">Listing</span>
+                <span class="review-modal-context__value"><?= sanitize_string($reviewListing) ?></span>
+            </div>
+            <div class="review-modal-context__row">
+                <span class="review-modal-context__label">Reviewing</span>
+                <span class="review-modal-context__value"><?= sanitize_string($reviewReceiver) ?></span>
+            </div>
+        </div>
+        <?php endif; ?>
+ 
+        <input type="hidden" name="transaction_id"
+               value="<?= !empty($eligibleTransaction) ? sanitize_int((int)$eligibleTransaction) : 0 ?>">
+        <input type="hidden" name="receiver_id"
+               value="<?= (int)($receiverId ?? 0) ?>">
+        <input type="hidden" name="score" id="reviewScoreHidden" value="0">
+ 
+        <label class="form-label mb-0">Rating</label>
+        <div class="d-flex align-items-center gap-2">
+            <div class="star-input" id="reviewStarInput"></div>
+            <span class="star-score-label" id="reviewScoreLabel">0 / 5</span>
+        </div>
+        <small class="error-message" id="reviewError"></small>
+ 
+        <label for="reviewComment" class="form-label mb-0 mt-1">Comment</label>
+        <textarea id="reviewComment" class="form-control" name="comment"
+                  rows="3" maxlength="80"
+                  placeholder="Share your experience (max 80 characters)..."></textarea>
+ 
+        <button class="btn btn-primary mt-1" name="submitReview">Submit Review</button>
+        <button type="button" class="btn btn-light close-dialog">Cancel</button>
+    </form>
+</dialog>
+ 
+<style>
+/* Review modal context block */
+.review-modal-context {
+    background: var(--bg-main);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.65rem 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    font-size: 0.875rem;
+}
+ 
+.review-modal-context__row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: baseline;
+}
+ 
+.review-modal-context__label {
+    font-weight: 600;
+    color: var(--text-light);
+    min-width: 70px;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+ 
+.review-modal-context__value {
+    color: var(--text-dark);
+    font-weight: 500;
+}
+</style>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="js/script.js"></script>

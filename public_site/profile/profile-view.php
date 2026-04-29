@@ -115,13 +115,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['saveSettings'])) {
                 <h2 class="mb-0 fw-bold"><?= sanitize_string($profileUser['full_name'] ?: $profileUser['username']) ?></h2>
                 <span class="text-muted small">@<?= sanitize_string($profileUser['username']) ?></span>
 
-                <div class="d-flex align-items-center gap-2 mt-1">
-                    <input type="range" min="0" max="5" step="0.5"
-                           value="<?= (float)($score ?? 0) ?>"
-                           class="rating" style="--val:<?= (float)($score ?? 0) ?>;"
-                           disabled>
-                    <span class="text-muted small"><?= $score ?? '0' ?> / 5 &nbsp;·&nbsp; <?= $countR ?> review<?= $countR == 1 ? '' : 's' ?></span>
-                </div>
+              <div class="star-display star-lg"
+     data-score="<?= (float)($score ?? 0) ?>"
+     title="<?= (float)($score ?? 0) ?> out of 5">
+</div>
+<span class="star-score-label"><?= number_format((float)($score ?? 0), 1) ?></span>
 
                 <div class="text-muted small mt-1">
                     <?= sanitize_string($profileUser['address'] ?? 'No address provided') ?>
@@ -175,13 +173,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['saveSettings'])) {
     <!-- Overview bar -->
     <div class="card-custom d-flex align-items-center gap-3 mb-4" style="max-width:360px;">
         <span class="display-6 fw-bold"><?= $score ?? '—' ?></span>
-        <div>
-            <input type="range" min="0" max="5" step="0.5"
-                   value="<?= (float)($score ?? 0) ?>"
-                   class="rating" style="--val:<?= (float)($score ?? 0) ?>;"
-                   disabled>
-            <div class="text-muted small"><?= $countR ?> review<?= $countR == 1 ? '' : 's' ?></div>
-        </div>
+      <div class="star-display star-xl"
+     data-score="<?= (float)($score ?? 0) ?>">
+</div>
     </div>
 
     <div class="row g-3">
@@ -200,12 +194,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['saveSettings'])) {
                                class="fw-semibold text-decoration-none" style="color:var(--text-dark);">
                                 <?= sanitize_string($reviewer['username'] ?? 'Unknown') ?>
                             </a>
-                            <div>
-                                <input type="range" min="0" max="5" step="0.5"
-                                       value="<?= (float)$rating['score'] ?>"
-                                       class="rating" style="--val:<?= (float)$rating['score'] ?>;"
-                                       disabled>
-                            </div>
+                          <?php echo '<div class="star-display" data-score="' . (float)$rating['score'] . '"></div>';?>
                         </div>
                     </div>
                     <?php if ($rating['comment']): ?>

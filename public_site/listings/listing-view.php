@@ -116,13 +116,11 @@ $images = !empty($listing['media_path'])
                                class="fw-semibold text-decoration-none" style="color:var(--text-dark);">
                                 <?= sanitize_string($seller['username']) ?>
                             </a>
-                            <div>
-                                <input type="range" min="0" max="5" step="0.5"
-                                       value="<?= (float)($sellerRating ?? 0) ?>"
-                                       class="rating"
-                                       style="--val:<?= (float)($sellerRating ?? 0) ?>;"
-                                       disabled>
-                            </div>
+                            <div class="star-display"
+     data-score="<?= (float)($sellerRating ?? 0) ?>"
+     title="<?= number_format((float)($sellerRating ?? 0), 1) ?> / 5">
+</div>
+<span class="star-score-label"><?= number_format((float)($sellerRating ?? 0), 1) ?></span>
                         </div>
                     </div>
 

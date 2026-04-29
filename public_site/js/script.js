@@ -587,3 +587,84 @@ if (form) {
     document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
     thumbnail.classList.add('active');
 }
+
+/* ═══════════════════════════════════════════════════
+   STAR RATING HELPERS
+   Add to the bottom of script.js (or where convenient)
+   ═══════════════════════════════════════════════════ */
+
+/**
+ * Renders read-only star display inside `el`.
+ * @param {HTMLElement} el    – container with class star-display
+ * @param {number}      score – 0–5, supports halves (e.g. 3.5)
+ */
+function starDisplay(el, score) {
+    el.innerHTML = '';
+    for (let i = 1; i <= 5; i++) {
+        const s = document.createElement('span');
+        s.className = 'star-display__star';
+        s.textContent = '★';
+        if (score >= i) {
+            s.classList.add('filled');
+        } else if (score >= i - 0.5) {
+            s.classList.add('half');
+        }
+        el.appendChild(s);
+    }
+}
+
+/**
+ * Wires click/hover interaction on a `.star-input` container.
+ * Updates `hiddenInput.value` with the selected integer (1–5).
+ * @param {HTMLElement}   container  – div.star-input
+ * @param {HTMLInputElement} hiddenInput – the <input type="hidden"> to update
+ */
+function starInput(container, hiddenInput) {
+    // Build 5 stars
+    container.innerHTML = '';
+    for (let i = 1; i <= 5; i++) {
+        const s = document.createElement('span');
+        s.className = 'star-input__star';
+        s.textContent = '★';
+        s.dataset.value = i;
+        container.appendChild(s);
+    }
+
+    const stars = container.querySelectorAll('.star-input__star');
+    let currentValue = parseInt(hiddenInput.value) || 0;
+
+    function paint(upTo) {
+        stars.forEach((s, idx) => {
+            s.classList.toggle('filled', idx < upTo);
+        });
+    }
+
+    paint(currentValue);
+
+    stars.forEach((s) => {
+        s.addEventListener('mouseenter', () => paint(parseInt(s.dataset.value)));
+        s.addEventListener('mouseleave', () => paint(currentValue));
+        s.addEventListener('click', () => {
+            currentValue = parseInt(s.dataset.value);
+            hiddenInput.value = currentValue;
+            paint(currentValue);
+            // Update visible label if present
+            const label = container.parentElement.querySelector('.star-score-label');
+            if (label) label.textContent = currentValue + ' / 5';
+        });
+    });
+}
+
+// ── Wire all static .star-display elements on page load ──
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.star-display[data-score]').forEach(function (el) {
+        starDisplay(el, parseFloat(el.dataset.score) || 0);
+    });
+
+    // Wire the review modal interactive stars if present
+    const reviewStarContainer = document.getElementById('reviewStarInput');
+    const reviewScoreHidden   = document.getElementById('reviewScoreHidden');
+    if (reviewStarContainer && reviewScoreHidden) {
+        starInput(reviewStarContainer, reviewScoreHidden);
+    }
+});
