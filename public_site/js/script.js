@@ -480,7 +480,7 @@ if (form) {
     function placeMain(src, item) {
         const img = document.createElement("img");
         img.src = src;
-        img.style.cssText = "width:100%; height:100%; object-fit:cover; pointer-events:none;";
+        img.style.cssText = "width:100%; height:100%; object-cover; pointer-events:none;";
 
         const removeBtn = makeRemoveBtn(() => removeItem(item));
         removeBtn.style.top   = "8px";
