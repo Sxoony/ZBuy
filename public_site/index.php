@@ -45,9 +45,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register_user'])) {
 $stmt = $pdo->prepare('SELECT * FROM listings WHERE status != "sold" ORDER BY created_at DESC');
 $stmt->execute();
 $listings = $stmt->fetchAll();
+
 if (isLoggedIn()) {
     $stmt = $pdo->prepare('SELECT 
-    t.transaction_id,
+    t.transaction_id, 
     IF(t.buyer_id = ?, l.seller_id, t.buyer_id) AS receiver_id
 FROM transactions t
 INNER JOIN listings l ON l.listing_id = t.listing_id
@@ -56,19 +57,20 @@ LEFT JOIN ratings r ON (
     AND r.reviewer_id = ?
 )
 WHERE (t.buyer_id = ? OR l.seller_id = ?)
-  AND t.transaction_id IS NOT NULL 
-  AND t.transaction_id > 0
-  AND r.rating_id IS NULL
-LIMIT 1');
+  AND t.status = "completed"
+  AND r.rating_id IS NULL ');
 
     $stmt->execute([$_SESSION['user_id'], $_SESSION['user_id'], $_SESSION['user_id'], $_SESSION['user_id']]);
  
-    $eligibleTransaction = $stmt->fetchAll();
-    if ($eligibleTransaction!=null){
-    $receiverId = $eligibleTransaction[0]['receiver_id'];
-    }else{
+    $transaction = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($transaction){
+    $receiverId = $transaction['receiver_id'];
+    $eligibleTransaction=$transaction['transaction_id'];
+        }else{
         $receiverId=null;
+        $eligibleTransaction=null;
     }
+
     }
 // Nav depth = 0 (we are at public_site root)
 $nav_depth = 0;
@@ -203,8 +205,8 @@ $nav_depth = 0;
 
             <h5>Leave a Review</h5>
 
-            <input type="hidden" name="transaction_id"value="<?= (int)$eligibleTransaction ?>">
-            <input type="hidden" name="receiver_id"value="<?= (int)$receiverId ?>">
+            <input type="text" name="transaction_id"value="<?= (int)$eligibleTransaction ?>">
+            <input type="text" name="receiver_id"value="<?= (int)$receiverId ?>">
 
             <label>Rating</label>
             <input type="range"
