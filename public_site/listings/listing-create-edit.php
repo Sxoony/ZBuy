@@ -106,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['postAd'])) {
             transition: border-color 0.2s;
         }
         #uploadBox.dragover { border-color: var(--primary); background: #eff6ff; }
-        #uploadBox img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+        #uploadBox img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
 
         /* Thumbnail strip */
         #thumbs {
@@ -122,7 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['postAd'])) {
         #thumbs img {
             width: 72px;
             height: 72px;
-            object-fit: cover;
+            object-fit: contain;
             border-radius: 8px;
             display: block;
             cursor: pointer;
@@ -250,6 +250,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['postAd'])) {
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../js/script.js"></script>
 <script>
+
+
+
 document.addEventListener('DOMContentLoaded', function () {
 
     const box         = document.getElementById('uploadBox');
@@ -263,7 +266,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const keptVal      = keptInput ? keptInput.value.trim() : '';
     let existingImages = keptVal !== '' ? keptVal.split('#').filter(Boolean) : [];
     let selectedFiles  = [];
+let mainItem = null;
 
+function sameItem(a, b) {
+    if (!a || !b || a.type !== b.type) return false;
+    return a.type === 'existing'
+        ? a.name === b.name
+        : a.file === b.file;
+}
     // Open file picker
     box.addEventListener('click', (e) => {
         if (e.target.classList.contains('remove-btn') || e.target === input) return;
@@ -298,41 +308,64 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ── Render ──
     function render() {
-        thumbs.innerHTML = '';
-        box.innerHTML    = '';
+    thumbs.innerHTML = '';
+    box.innerHTML    = '';
 
-        const allExisting = existingImages.map(name => ({ type: 'existing', name }));
-        const allNew      = selectedFiles.map((file, i) => ({ type: 'new', file, i }));
-        const all         = [...allExisting, ...allNew];
+    const allExisting = existingImages.map(name => ({ type: 'existing', name }));
+    const allNew      = selectedFiles.map((file, i) => ({ type: 'new', file, i }));
+    let all = [...allExisting, ...allNew];
 
-        if (all.length === 0) {
-            box.innerHTML = `<span class="text-muted" id="uploadPlaceholder">
-                <span style="font-size:28px;">📷</span><br>
-                <span class="small">Click or drag images here</span>
-            </span>`;
-            return;
+// Force true order based on mainItem
+if (mainItem) {
+    const idx = all.findIndex(i =>
+        i.type === mainItem.type &&
+        (i.type === 'existing'
+            ? i.name === mainItem.name
+            : i.file === mainItem.file)
+    );
+
+    if (idx > 0) {
+        const [picked] = all.splice(idx, 1);
+        all.unshift(picked);
+    }
+}
+
+    if (all.length === 0) {
+        box.innerHTML = `<span class="text-muted" id="uploadPlaceholder">
+            <span style="font-size:28px;">📷</span><br>
+            <span class="small">Click or drag images here</span>
+        </span>`;
+        return;
+    }
+
+    // Put the clicked image first
+    if (mainItem) {
+        const idx = all.findIndex(item => sameItem(item, mainItem));
+        if (idx > 0) {
+            const [picked] = all.splice(idx, 1);
+            all.unshift(picked);
         }
+    }
 
-        // Resolve all srcs preserving order
-        const srcs   = new Array(all.length);
-        let resolved = 0;
+    const srcs   = new Array(all.length);
+    let resolved = 0;
 
-        all.forEach((item, pos) => {
-            if (item.type === 'existing') {
-                srcs[pos] = { src: `../img/${item.name}`, item, pos };
+    all.forEach((item, pos) => {
+        if (item.type === 'existing') {
+            srcs[pos] = { src: `../img/${item.name}`, item, pos };
+            resolved++;
+            if (resolved === all.length) placeAll(srcs);
+        } else {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                srcs[pos] = { src: e.target.result, item, pos };
                 resolved++;
                 if (resolved === all.length) placeAll(srcs);
-            } else {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    srcs[pos] = { src: e.target.result, item, pos };
-                    resolved++;
-                    if (resolved === all.length) placeAll(srcs);
-                };
-                reader.readAsDataURL(item.file);
-            }
-        });
-    }
+            };
+            reader.readAsDataURL(item.file);
+        }
+    });
+}
 
     function placeAll(srcs) {
         box.innerHTML    = '';
@@ -363,16 +396,25 @@ document.addEventListener('DOMContentLoaded', function () {
         const img = document.createElement('img');
         img.src = src;
         img.title = 'Click to make cover';
-        img.addEventListener('click', () => {
-            if (item.type === 'existing') {
-                existingImages = existingImages.filter(n => n !== item.name);
-                existingImages.unshift(item.name);
-            } else {
-                selectedFiles = selectedFiles.filter(f => f !== item.file);
-                selectedFiles.unshift(item.file);
-            }
-            render();
-        });
+     img.addEventListener('click', () => {
+    mainItem = item;
+
+    if (item.type === 'existing') {
+        // Move this existing image to front
+        existingImages = [
+            item.name,
+            ...existingImages.filter(n => n !== item.name)
+        ];
+    } else {
+        // Move this new file to front
+        selectedFiles = [
+            item.file,
+            ...selectedFiles.filter(f => f !== item.file)
+        ];
+    }
+
+    render();
+});
 
         const btn = makeRemoveBtn(() => removeItem(item));
 
@@ -389,7 +431,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         render();
     }
-
+function syncInputFiles() {
+    const dt = new DataTransfer();
+    selectedFiles.forEach(file => dt.items.add(file));
+    input.files = dt.files;
+}
     function makeRemoveBtn(onClick) {
         const btn = document.createElement('button');
         btn.type      = 'button';

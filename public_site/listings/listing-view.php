@@ -73,7 +73,7 @@ $images = !empty($listing['media_path'])
                 <?php foreach ($images as $img): ?>
                     <img src="../img/<?= sanitize_string($img) ?>"
                          class="thumbnail rounded <?= $img === $images[0] ? 'border border-primary border-2' : 'border' ?>"
-                         style="width:72px; height:72px; object-fit:cover; cursor:pointer; flex-shrink:0;"
+                         style="width:72px; height:72px; object-fit:contain; cursor:pointer; flex-shrink:0;"
                          onclick="switchImage(this)">
                 <?php endforeach; ?>
             </div>
